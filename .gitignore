@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Tarama çıktıları
+results.json
+scan_*.json
+scan_*.csv
+found_subdomains.txt
+banner_raport.txt
+
+# Wordlist (indirilebilir, repoda tutmaya gerek yok)
+subdomains-top1million-5000.txt
+
+# Ortam
+.env
+venv/
+.venv/

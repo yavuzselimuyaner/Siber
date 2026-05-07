@@ -1,114 +1,113 @@
-# Banner Grabbing Raporu
+# Siber Güvenlik Araçları
 
-## Genel Bilgi
+Eğitim amaçlı geliştirilen Python tabanlı siber güvenlik araçları koleksiyonu.
 
-Bu rapor, hedef sistemlere yönelik gerçekleştirilen banner grabbing (afiş yakalama) tekniğiyle elde edilen servis bilgilerini içermektedir. Amaç; açık portlarda çalışan servislerin sürüm ve yapılandırma bilgilerini pasif olarak tespit etmektir.
-
----
-
-## Tespit Edilen Servisler
-
-### 1. HTTP Servisi
-
-| Alan | Değer |
-|------|-------|
-| Protokol | HTTP/1.1 |
-| Durum Kodu | 200 OK |
-| Sunucu | gws (Google Web Server) |
-| Content-Type | text/html; charset=ISO-8859-1 |
-| X-Frame-Options | SAMEORIGIN |
-| X-XSS-Protection | 0 |
-
-#### HTTP Başlık Analizi
-
-**Content-Security-Policy-Report-Only**
-- CSP yalnızca `report-only` modunda tanımlı; ihlaller engellenmez, sadece raporlanır.
-- `unsafe-eval` ve `unsafe-inline` direktifleri izin verilen kaynaklar arasında yer almaktadır.
-
-**X-XSS-Protection: 0**
-- Tarayıcı tabanlı XSS filtresi devre dışı bırakılmış. Modern yaklaşımda CSP bu rolü üstlenir.
-
-**X-Frame-Options: SAMEORIGIN**
-- Sayfa yalnızca aynı kaynaktan (origin) iframe içinde yüklenebilir. Clickjacking saldırılarına karşı koruma sağlar.
-
-**Set-Cookie Başlıkları**
-
-| Cookie | Güvenlik Bayrakları | Notlar |
-|--------|---------------------|--------|
-| `__Secure-STRP` | `Secure`, `SameSite=strict` | Kısa süreli oturum çerezi (5 dakika) |
-| `AEC` | `Secure`, `HttpOnly`, `SameSite=lax` | 6 aylık süre, JS erişimi yok |
-| `NID` | — | Tercih/oturum çerezi |
+> **Uyarı:** Tüm araçlar yalnızca yetkili sistemlerde ve eğitim ortamlarında kullanılmalıdır.
 
 ---
 
-### 2. SSH Servisi
+## Proje Yapısı
 
 ```
-Banner: SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.15
+Siber/
+├── http_header_scanner/
+│   └── http_header_scanner.py   # HTTP güvenlik header analizi
+├── port_scanner/
+│   ├── port_scanner.py          # Temel TCP port tarayıcı
+│   └── threaded_port_scanner.py # Multi-thread port tarayıcı + banner grabbing
+├── subdomain_scanner/
+│   └── subdomain_scanner.py     # DNS tabanlı subdomain keşfi
+└── socket_basics/
+    ├── banner_grabber.py        # Raw socket & banner grabbing demo
+    └── banner_analysis.md       # Örnek banner grabbing analiz raporu
 ```
-
-| Alan | Değer |
-|------|-------|
-| Protokol | SSH-2.0 |
-| Yazılım | OpenSSH 9.6p1 |
-| İşletim Sistemi | Ubuntu (3ubuntu13.15) |
-
-**Bulgular:**
-- Sunucunun Ubuntu tabanlı bir Linux sistemi olduğu ve OpenSSH 9.6p1 çalıştırdığı tespit edilmiştir.
-- Bu bilgi hedef sistem hakkında OS fingerprinting için kullanılabilir.
 
 ---
 
-### 3. FTP Servisi
+## Araçlar
 
-```
-220 Welcome to the DLP Test FTP Server
-```
+### 1. HTTP Güvenlik Header Tarayıcı
 
-| Alan | Değer |
-|------|-------|
-| Port | 21 (FTP) |
-| Banner | Welcome to the DLP Test FTP Server |
+Web sitelerinin HTTP başlıklarını analiz eder, eksik güvenlik başlıklarını ve bilgi sızdıran başlıkları tespit eder.
 
-**Bulgular:**
-- FTP servisi aktif ve banner bilgisi açık şekilde yayınlanmaktadır.
-- "DLP Test" ifadesi bu sunucunun bir test/lab ortamına ait olduğuna işaret etmektedir.
-- FTP şifrelenmemiş bir protokoldür; kimlik bilgileri ve veri açık metin olarak iletilir.
-
----
-
-## Güvenlik Değerlendirmesi
-
-| Bulgu | Risk | Öneri |
-|-------|------|-------|
-| SSH sürüm bilgisi açıkta | Düşük | `VersionAddendum` ile banner gizlenebilir |
-| FTP servisi aktif (şifresiz) | Yüksek | SFTP veya FTPS ile değiştirilmeli |
-| CSP `report-only` modunda | Orta | Enforce moduna geçirilmeli |
-| `NID` çerezinde `Secure`/`HttpOnly` bayrağı yok | Düşük | Bayraklar eklenmeli |
-
----
-
-## Araç ve Yöntem
-
-Aşağıdaki araçlarla banner grabbing gerçekleştirilebilir:
+**Kontrol ettiği başlıklar:**
+- `Content-Security-Policy`, `X-Frame-Options` — eksikse risk
+- `Server`, `X-Powered-By` — varsa bilgi sızıntısı
 
 ```bash
-# HTTP banner
-curl -I http://<hedef>
-
-# FTP banner
-nc <hedef> 21
-
-# SSH banner
-nc <hedef> 22
-
-# Nmap ile tüm servisler
-nmap -sV --script=banner <hedef>
+pip install requests
+cd http_header_scanner
+python http_header_scanner.py
 ```
 
 ---
 
-## Notlar
+### 2. Temel Port Tarayıcı
 
-- Bu rapor yalnızca eğitim ve yetkilendirilmiş test amaçlıdır.
-- Tarih: 23 Nisan 2026
+Komut satırı argümanlarıyla belirtilen host ve port aralığını tarar.
+
+```bash
+cd port_scanner
+python port_scanner.py --host scanme.nmap.org --start 1 --end 1024
+```
+
+---
+
+### 3. Multi-Thread Port Tarayıcı
+
+Tek thread ve multi-thread modlarını karşılaştırmalı sunar; açık portlardan banner bilgisi çeker.
+
+```bash
+cd port_scanner
+python threaded_port_scanner.py
+```
+
+---
+
+### 4. Subdomain Tarayıcı
+
+Wordlist kullanarak DNS çözümlemesiyle alt domainleri keşfeder.
+
+```bash
+# Wordlist indir:
+# https://github.com/danielmiessler/SecLists/raw/master/Discovery/DNS/subdomains-top1million-5000.txt
+# İndirilen dosyayı wordlist.txt olarak kaydet
+
+cd subdomain_scanner
+python subdomain_scanner.py
+```
+
+---
+
+### 5. Socket Temelleri & Banner Grabbing
+
+Temel Python socket kullanımını gösteren, birden fazla hedefe bağlanarak banner bilgisi çeken demo.
+
+```bash
+cd socket_basics
+python banner_grabber.py
+```
+
+Analiz raporu: [`socket_basics/banner_analysis.md`](socket_basics/banner_analysis.md)
+
+---
+
+## Kurulum
+
+```bash
+git clone https://github.com/<kullanici-adin>/Siber.git
+cd Siber
+pip install requests
+```
+
+---
+
+## Öğrenilen Konular
+
+| Konu | Dosya |
+|------|-------|
+| HTTP header analizi & risk skorlama | `http_header_scanner/` |
+| TCP soket bağlantısı & port tarama | `port_scanner/port_scanner.py` |
+| ThreadPoolExecutor & eşzamanlılık | `port_scanner/threaded_port_scanner.py` |
+| DNS çözümleme & subdomain keşfi | `subdomain_scanner/` |
+| Raw socket & banner grabbing | `socket_basics/` |
