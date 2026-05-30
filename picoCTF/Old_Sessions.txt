@@ -1,0 +1,58 @@
+SESSION TIMEOUT VULNERABILITY - SOLUTION
+
+VULNERABILITY DESCRIPTION:
+A misconfigured session expiration system allows sessions to remain active indefinitely. 
+If a user does not explicitly log out and simply closes the browser tab, their session 
+remains authenticated. An attacker can then use the same browser later to access the 
+user's account without needing any credentials, exploiting the fact that sessions never 
+expire.
+
+CHALLENGE SOLUTION STEPS:
+
+1. CREATE ACCOUNT AND LOGIN
+   - Navigate to the challenge website
+   - Create a new user account with username and password
+   - Log in with your newly created credentials
+
+2. FIND THE HINT
+   - Read the comments on the page carefully
+   - The comments will contain a hint about the "/sessions" endpoint
+   - This hints at where session data is stored/accessible
+
+3. ACCESS THE SESSIONS ENDPOINT
+   - Add "/sessions" to the current URL
+   - Example: if you're at http://example.com, go to http://example.com/sessions
+   - This will display active sessions and their corresponding session values
+
+4. LOCATE ADMIN SESSION VALUE
+   - On the /sessions page, you will see a list of sessions
+   - Find the session that belongs to the admin user
+   - Note down the admin's session ID/value
+
+5. COOKIE MANIPULATION
+   - Open Developer Tools: Press F12 or Right-Click → Inspect
+   - Navigate to the "Application" tab
+   - Find the "Cookies" section in the left sidebar
+   - Locate your current session cookie
+
+6. EXPLOIT THE VULNERABILITY
+   - Replace YOUR session cookie value with the ADMIN's session value
+   - Modify the cookie and reload the page
+   - You are now logged in as the admin without needing admin credentials
+
+7. FLAG CAPTURE
+   - With admin access, you should now see admin-only content
+   - Find and submit the flag
+
+ROOT CAUSE:
+The application does not properly invalidate sessions when users close their browsers.
+Sessions have no expiration time, making them vulnerable to session hijacking through
+cookie manipulation or access to session storage endpoints.
+
+SECURITY LESSON:
+- Always implement proper session timeout mechanisms
+- Sessions should expire after a reasonable period of inactivity
+- Use secure, random session identifiers
+- Protect session endpoints (like /sessions) with authentication
+- Implement CSRF tokens and secure cookie attributes
+- Always explicitly log out users when required

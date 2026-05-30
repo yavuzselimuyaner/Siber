@@ -1,0 +1,94 @@
+PRIVILEGE ESCALATION VIA SUDO EMACS - WRITE-UP
+
+═══════════════════════════════════════════════════════════════════════════
+
+1. DESCRIPTION
+The goal of this challenge was to retrieve the flag located in flag.txt 
+within the home directory. However, the file was restricted to the root user, 
+requiring a way to escalate privileges and read its contents.
+
+═══════════════════════════════════════════════════════════════════════════
+
+2. ENUMERATION
+
+Upon logging into the server via SSH, I checked the current directory and 
+found the target file:
+
+$ ls -l
+-r-------- 1 root root 42 May  8 11:00 flag.txt
+
+Attempting to read the file with cat resulted in a Permission Denied error:
+
+$ cat flag.txt
+cat: flag.txt: Permission denied
+
+I also tried to change the file permissions using chmod, which was also 
+rejected due to insufficient privileges.
+
+To see what commands my user could run with higher privileges, I executed:
+
+$ sudo -l
+
+Output:
+───────────────────────────────────────────────────────────────────────────
+User ctf-player may run the following commands on challenge:
+    (ALL) NOPASSWD: /bin/emacs
+───────────────────────────────────────────────────────────────────────────
+
+The output revealed that the user ctf-player is allowed to run the Emacs 
+text editor as root WITHOUT providing a password (NOPASSWD flag).
+
+═══════════════════════════════════════════════════════════════════════════
+
+3. EXPLOITATION (PRIVILEGE ESCALATION)
+
+The vulnerability lies in allowing a powerful text editor like Emacs to run 
+with root privileges without restrictions. Text editors are not just for 
+viewing files—they can execute system commands and spawn shells.
+
+Exploitation Method:
+Since I could run Emacs with root privileges, I could use it to open and 
+read any file on the system, including the restricted flag.txt.
+
+Execution:
+
+$ sudo emacs /home/ctf-player/flag.txt
+
+This command opened the Emacs editor interface with root privileges, 
+displaying the contents of the restricted flag.txt file.
+
+Alternative Methods:
+Text editors running as root can also be exploited to:
+- Open a root shell using the shell functionality
+- Read/write sensitive system files
+- Execute arbitrary commands
+- Modify system configurations
+
+═══════════════════════════════════════════════════════════════════════════
+
+4. CONCLUSION
+
+The flag was successfully retrieved by exploiting a misconfigured Sudoers 
+entry that allowed an unprivileged user to run a powerful text editor with 
+root privileges.
+
+KEY SECURITY LESSON:
+In a secure environment, powerful tools like text editors (Emacs, Vi, Nano) 
+should NEVER be allowed to run with sudo privileges without strict 
+restrictions. These tools have command execution capabilities and can be 
+used to:
+- Read sensitive files
+- Spawn a root shell
+- Modify system files
+- Bypass access controls
+
+SUDOERS BEST PRACTICES:
+✗ AVOID: (ALL) NOPASSWD: /bin/emacs
+✗ AVOID: (ALL) NOPASSWD: /usr/bin/nano
+✗ AVOID: (ALL) NOPASSWD: /usr/bin/vim
+✓ BETTER: Restrict sudo only to specific, necessary commands
+✓ BETTER: Always require passwords for sensitive operations
+✓ BETTER: Use role-based access control (RBAC)
+✓ BETTER: Audit and log all sudo usage
+
+═══════════════════════════════════════════════════════════════════════════

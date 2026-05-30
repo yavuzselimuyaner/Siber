@@ -1,6 +1,6 @@
-# Siber Güvenlik Araçları
+# Siber Güvenlik — Araçlar, Writeup'lar, Notlar
 
-Eğitim amaçlı geliştirilen Python tabanlı siber güvenlik araçları koleksiyonu.
+Eğitim amaçlı geliştirilen Python tabanlı siber güvenlik araçları, HackTheBox / PortSwigger / picoCTF pratiklerinin writeup'ları ve pentest sırasında biriken hızlı başvuru notları.
 
 > **Uyarı:** Tüm araçlar yalnızca yetkili sistemlerde ve eğitim ortamlarında kullanılmalıdır.
 
@@ -17,9 +17,19 @@ Siber/
 │   └── threaded_port_scanner.py # Multi-thread port tarayıcı + banner grabbing
 ├── subdomain_scanner/
 │   └── subdomain_scanner.py     # DNS tabanlı subdomain keşfi
-└── socket_basics/
-    ├── banner_grabber.py        # Raw socket & banner grabbing demo
-    └── banner_analysis.md       # Örnek banner grabbing analiz raporu
+├── socket_basics/
+│   ├── banner_grabber.py        # Raw socket & banner grabbing demo
+│   └── banner_analysis.md       # Örnek banner grabbing analiz raporu
+├── writeups/
+│   ├── htb/                     # HackTheBox makine writeup'ları + TEMPLATE
+│   └── portswigger/             # OWASP Top 10 lab writeup'ları + TEMPLATE
+├── picoCTF/                     # picoCTF challenge çözümleri
+└── notes/
+    ├── owasp-top10-quickref.md  # OWASP Top 10 hızlı referans
+    ├── linux-privesc-checklist.md
+    ├── nmap-reference.md
+    ├── burp-workflow.md
+    └── reverse-shells.md
 ```
 
 ---
@@ -102,12 +112,30 @@ pip install requests
 
 ---
 
+## Writeup'lar & Pratik
+
+- **HackTheBox** — [`writeups/htb/`](writeups/htb/) (recon → exploit → priv-esc döngüsü)
+- **PortSwigger Web Security Academy** — [`writeups/portswigger/`](writeups/portswigger/) (OWASP Top 10 lab'leri)
+- **picoCTF** — [`picoCTF/`](picoCTF/) (cripto, web, forensics, binary)
+
+## Notlar
+
+[`notes/`](notes/) altında pentest sırasında sık başvurulan cheatsheet'ler:
+
+- OWASP Top 10 hızlı referans
+- Linux yetki yükseltme kontrol listesi
+- Nmap bayrak referansı
+- Burp Suite iş akışı
+- Reverse shell tek satırlık komutlar
+
 ## Öğrenilen Konular
 
-| Konu | Dosya |
-|------|-------|
+| Konu | Klasör |
+|------|--------|
 | HTTP header analizi & risk skorlama | `http_header_scanner/` |
 | TCP soket bağlantısı & port tarama | `port_scanner/port_scanner.py` |
 | ThreadPoolExecutor & eşzamanlılık | `port_scanner/threaded_port_scanner.py` |
 | DNS çözümleme & subdomain keşfi | `subdomain_scanner/` |
 | Raw socket & banner grabbing | `socket_basics/` |
+| Web zafiyet exploitation (OWASP Top 10) | `writeups/portswigger/` |
+| Penetrasyon testi metodolojisi | `writeups/htb/` |
